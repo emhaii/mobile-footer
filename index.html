@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fill-in-the-Blank Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .game-container {
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Modern browsers with dynamic viewport */
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            text-align: center;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .score {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .game-content {
+            flex-grow: 1;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .blank-input {
+            display: inline-block;
+            min-width: 100px;
+            padding: 0.5rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .blank-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .blank-input.correct {
+            border-color: #4caf50;
+            background: #e8f5e8;
+        }
+
+        .blank-input.incorrect {
+            border-color: #f44336;
+            background: #ffeaea;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .hint {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f0f7ff;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 40%;
+            transition: width 0.3s ease;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .footer-content {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .check-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .check-btn:active {
+            transform: translateY(0);
+        }
+
+        .check-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .skip-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .skip-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+            .game-content {
+                padding: 1rem;
+            }
+            
+            .question-card {
+                padding: 1.5rem;
+            }
+            
+            .blank-input {
+                min-width: 80px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .check-btn {
+                width: 100%;
+            }
+        }
+
+        /* Keyboard visibility indicator */
+        .keyboard-active {
+            /* Additional styles when keyboard is active */
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="header">
+            <h1>Fill in the Blanks</h1>
+            <div class="score">Score: 150 points • Question 2 of 10</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </header>
+
+        <main class="game-content">
+            <div class="question-card">
+                <div class="question-number">Question 2</div>
+                <div class="question-text">
+                    The capital of France is <input type="text" class="blank-input" placeholder="city"> and it is located on the <input type="text" class="blank-input" placeholder="river"> River. This beautiful city is famous for its <input type="text" class="blank-input" placeholder="landmark"> tower.
+                </div>
+                <div class="hint">
+                    💡 <strong>Hint:</strong> This city is known as the "City of Light" and hosts the famous iron lattice tower built in 1889.
+                </div>
+            </div>
+
+            <div class="question-card">
+                <div class="question-number">Next Question Preview</div>
+                <div class="question-text">
+                    The largest planet in our solar system is <input type="text" class="blank-input" placeholder="planet" disabled> and it has <input type="text" class="blank-input" placeholder="number" disabled> major moons.
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <button class="check-btn" onclick="checkAnswers()">Check Answers</button>
+                <button class="skip-btn" onclick="skipQuestion()">Skip</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function checkAnswers() {
+            const inputs = document.querySelectorAll('.blank-input:not([disabled])');
+            const correctAnswers = ['Paris', 'Seine', 'Eiffel'];
+            let allCorrect = true;
+            
+            inputs.forEach((input, index) => {
+                input.classList.remove('correct', 'incorrect');
+                
+                if (input.value.trim().toLowerCase() === correctAnswers[index].toLowerCase()) {
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('incorrect');
+                    allCorrect = false;
+                }
+            });
+            
+            if (allCorrect) {
+                setTimeout(() => {
+                    alert('Excellent! All answers are correct! 🎉');
+                }, 500);
+            }
+        }
+        
+        function skipQuestion() {
+            if (confirm('Are you sure you want to skip this question?')) {
+                // Move to next question logic here
+                alert('Question skipped. Moving to next question...');
+            }
+        }
+        
+        // Handle keyboard visibility (basic detection)
+        let initialViewportHeight = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            const currentHeight = window.innerHeight;
+            const heightDifference = initialViewportHeight - currentHeight;
+            
+            if (heightDifference > 150) {
+                // Keyboard is likely visible
+                document.body.classList.add('keyboard-active');
+            } else {
+                // Keyboard is likely hidden
+                document.body.classList.remove('keyboard-active');
+            }
+        });
+        
+        // Focus management for better UX
+        document.querySelectorAll('.blank-input').forEach(input => {
+            input.addEventListener('focus', () => {
+                // Small delay to ensure keyboard is fully visible
+                setTimeout(() => {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
