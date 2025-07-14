@@ -282,7 +282,7 @@
         <footer class="footer">
             <div class="footer-content">
                 <button class="check-btn" onclick="checkAnswers()">Check Answers</button>
-                <button class="skip-btn" onclick="skipQuestion()">Skip</button>
+                <!-- <button class="skip-btn" onclick="skipQuestion()">Skip</button> -->
             </div>
         </footer>
     </div>
@@ -318,34 +318,34 @@
             }
         }
         
-        // // Virtual Keyboard API with fallback
-        // if ('virtualKeyboard' in navigator) {
-        //     // Modern Virtual Keyboard API
-        //     navigator.virtualKeyboard.overlaysContent = true;
+        // Virtual Keyboard API with fallback
+        if ('virtualKeyboard' in navigator) {
+            // Modern Virtual Keyboard API
+            navigator.virtualKeyboard.overlaysContent = true;
             
-        //     navigator.virtualKeyboard.addEventListener('geometrychange', (event) => {
-        //         const { height } = event.target.boundingRect;
-        //         const footer = document.querySelector('.footer');
+            navigator.virtualKeyboard.addEventListener('geometrychange', (event) => {
+                const { height } = event.target.boundingRect;
+                const footer = document.querySelector('.footer');
                 
-        //         if (height > 0) {
-        //             // Keyboard is visible
-        //             document.body.classList.add('keyboard-active');
-        //             footer.style.transform = `translateY(-${height}px)`;
+                if (height > 0) {
+                    // Keyboard is visible
+                    document.body.classList.add('keyboard-active');
+                    footer.style.transform = `translateY(-${height}px)`;
                     
-        //             // Adjust content padding to account for moved footer
-        //             const gameContent = document.querySelector('.game-content');
-        //             gameContent.style.paddingBottom = `${height + 100}px`;
-        //         } else {
-        //             // Keyboard is hidden
-        //             document.body.classList.remove('keyboard-active');
-        //             footer.style.transform = 'translateY(0)';
+                    // Adjust content padding to account for moved footer
+                    const gameContent = document.querySelector('.game-content');
+                    gameContent.style.paddingBottom = `${height + 100}px`;
+                } else {
+                    // Keyboard is hidden
+                    document.body.classList.remove('keyboard-active');
+                    footer.style.transform = 'translateY(0)';
                     
-        //             // Reset content padding
-        //             const gameContent = document.querySelector('.game-content');
-        //             gameContent.style.paddingBottom = '2rem';
-        //         }
-        //     });
-        // } else {
+                    // Reset content padding
+                    const gameContent = document.querySelector('.game-content');
+                    gameContent.style.paddingBottom = '2rem';
+                }
+            });
+        } else {
             // Fallback for browsers without Virtual Keyboard API
             let initialViewportHeight = window.innerHeight;
             
@@ -367,7 +367,7 @@
                     gameContent.style.paddingBottom = '2rem';
                 }
             });
-        // }
+        }
         
         // Focus management for better UX
         document.querySelectorAll('.blank-input').forEach(input => {
