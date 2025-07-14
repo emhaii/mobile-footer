@@ -19,6 +19,7 @@
         }
 
         .game-container {
+            height: 100vh; /* Fallback */
             height: 100dvh; /* Modern browsers with dynamic viewport */
             display: flex;
             flex-direction: column;
@@ -53,6 +54,7 @@
             display: flex;
             flex-direction: column;
             gap: 2rem;
+            transition: padding-bottom 0.3s ease;
         }
 
         .question-card {
@@ -157,6 +159,8 @@
             padding: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             flex-shrink: 0;
+            min-height: 80px;
+            transition: transform 0.3s ease;
         }
 
         .footer-content {
@@ -235,9 +239,14 @@
             }
         }
 
-        /* Keyboard visibility indicator */
-        .keyboard-active {
-            /* Additional styles when keyboard is active */
+        /* Keyboard visibility styles */
+        .keyboard-active .footer {
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .keyboard-active .game-content {
+            /* Additional smooth scrolling when keyboard is active */
+            scroll-behavior: smooth;
         }
     </style>
 </head>
@@ -257,13 +266,6 @@
                 <div class="question-text">
                     The capital of France is <input type="text" class="blank-input" placeholder="city"> and it is located on the <input type="text" class="blank-input" placeholder="river"> River. This beautiful city is famous for its <input type="text" class="blank-input" placeholder="landmark"> tower.
                 </div>
-                <div class="question-text">
-                    The capital of France is <input type="text" class="blank-input" placeholder="city"> and it is located on the <input type="text" class="blank-input" placeholder="river"> River. This beautiful city is famous for its <input type="text" class="blank-input" placeholder="landmark"> tower.
-                </div>
-                <div class="question-text">
-                    The capital of France is <input type="text" class="blank-input" placeholder="city"> and it is located on the <input type="text" class="blank-input" placeholder="river"> River. This beautiful city is famous for its <input type="text" class="blank-input" placeholder="landmark"> tower.
-                </div>
-                
                 <div class="hint">
                     💡 <strong>Hint:</strong> This city is known as the "City of Light" and hosts the famous iron lattice tower built in 1889.
                 </div>
@@ -316,21 +318,56 @@
             }
         }
         
-        // Handle keyboard visibility (basic detection)
-        let initialViewportHeight = window.innerHeight;
-        
-        window.addEventListener('resize', () => {
-            const currentHeight = window.innerHeight;
-            const heightDifference = initialViewportHeight - currentHeight;
+        // Virtual Keyboard API with fallback
+        if ('virtualKeyboard' in navigator) {
+            // Modern Virtual Keyboard API
+            navigator.virtualKeyboard.overlaysContent = true;
             
-            if (heightDifference > 150) {
-                // Keyboard is likely visible
-                document.body.classList.add('keyboard-active');
-            } else {
-                // Keyboard is likely hidden
-                document.body.classList.remove('keyboard-active');
-            }
-        });
+            navigator.virtualKeyboard.addEventListener('geometrychange', (event) => {
+                const { height } = event.target.boundingRect;
+                const footer = document.querySelector('.footer');
+                
+                if (height > 0) {
+                    // Keyboard is visible
+                    document.body.classList.add('keyboard-active');
+                    footer.style.transform = `translateY(-${height}px)`;
+                    
+                    // Adjust content padding to account for moved footer
+                    const gameContent = document.querySelector('.game-content');
+                    gameContent.style.paddingBottom = `${height + 100}px`;
+                } else {
+                    // Keyboard is hidden
+                    document.body.classList.remove('keyboard-active');
+                    footer.style.transform = 'translateY(0)';
+                    
+                    // Reset content padding
+                    const gameContent = document.querySelector('.game-content');
+                    gameContent.style.paddingBottom = '2rem';
+                }
+            });
+        } else {
+            // Fallback for browsers without Virtual Keyboard API
+            let initialViewportHeight = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                const currentHeight = window.innerHeight;
+                const heightDifference = initialViewportHeight - currentHeight;
+                const footer = document.querySelector('.footer');
+                const gameContent = document.querySelector('.game-content');
+                
+                if (heightDifference > 150) {
+                    // Keyboard is likely visible
+                    document.body.classList.add('keyboard-active');
+                    footer.style.transform = `translateY(-${heightDifference}px)`;
+                    gameContent.style.paddingBottom = `${heightDifference + 100}px`;
+                } else {
+                    // Keyboard is likely hidden
+                    document.body.classList.remove('keyboard-active');
+                    footer.style.transform = 'translateY(0)';
+                    gameContent.style.paddingBottom = '2rem';
+                }
+            });
+        }
         
         // Focus management for better UX
         document.querySelectorAll('.blank-input').forEach(input => {
